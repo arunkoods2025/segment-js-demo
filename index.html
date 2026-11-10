@@ -1,0 +1,180 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Segment Analytics.js Playground</title>
+
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            background: #f4f6f9;
+            padding: 30px;
+            color: #222;
+        }
+
+        .container {
+            max-width: 750px;
+            margin: auto;
+            background: white;
+            padding: 30px;
+            border-radius: 12px;
+        }
+
+        button {
+            padding: 12px 18px;
+            margin: 7px;
+            border: none;
+            border-radius: 6px;
+            background: #635bff;
+            color: white;
+            cursor: pointer;
+        }
+
+        input {
+            padding: 10px;
+            margin: 7px;
+        }
+
+        #status {
+            background: #eef3ff;
+            padding: 15px;
+            margin-top: 20px;
+            border-radius: 6px;
+        }
+    </style>
+</head>
+
+<body>
+<div class="container">
+
+    <h1>Segment Analytics.js Playground</h1>
+    <p>Test Segment browser tracking events.</p>
+
+    <h3>1. Track Event</h3>
+    <button onclick="trackEvent()">Track Button Click</button>
+
+    <h3>2. Identify User</h3>
+    <button onclick="identifyUser()">Identify User</button>
+
+    <h3>3. Group User</h3>
+    <button onclick="groupUser()">Group User</button>
+
+    <h3>4. Alias User</h3>
+    <button onclick="aliasUser()">Alias User</button>
+
+    <h3>5. Custom Event</h3>
+    <input id="eventName" placeholder="Enter event name">
+    <button onclick="customEvent()">Send Custom Event</button>
+
+    <div id="status">Waiting for events...</div>
+
+</div>
+
+<script>
+!function(){
+    var analytics = window.analytics = window.analytics || [];
+
+    if (!analytics.initialize) {
+        if (analytics.invoked) {
+            console.error("Segment snippet loaded twice");
+        } else {
+            analytics.invoked = true;
+
+            analytics.methods = [
+                "trackSubmit", "trackClick", "trackLink",
+                "trackForm", "pageview", "identify",
+                "reset", "group", "track", "ready",
+                "alias", "debug", "page", "screen",
+                "once", "off", "on", "addSourceMiddleware",
+                "addIntegrationMiddleware", "setAnonymousId",
+                "addDestinationMiddleware", "register"
+            ];
+
+            analytics.factory = function(method) {
+                return function() {
+                    var args = Array.prototype.slice.call(arguments);
+                    args.unshift(method);
+                    analytics.push(args);
+                    return analytics;
+                };
+            };
+
+            for (var i = 0; i < analytics.methods.length; i++) {
+                var method = analytics.methods[i];
+                analytics[method] = analytics.factory(method);
+            }
+
+            analytics.load = function(key) {
+                var script = document.createElement("script");
+                script.type = "text/javascript";
+                script.async = true;
+                script.src =
+                    "https://cdn.segment.com/analytics.js/v1/" +
+                    key + "/analytics.min.js";
+
+                var first = document.getElementsByTagName("script")[0];
+                first.parentNode.insertBefore(script, first);
+            };
+
+            analytics.SNIPPET_VERSION = "5.2.0";
+
+            analytics.load("JdNbboIRAlu0OCDxNTqXR3qBFdOCwHl3");
+
+            analytics.page();
+        }
+    }
+}();
+
+function showStatus(message) {
+    document.getElementById("status").innerText = message;
+}
+
+function trackEvent() {
+    analytics.track("Button Clicked", {
+        button_name: "Track Button",
+        page: "Segment Playground"
+    });
+    showStatus("Track event sent!");
+}
+
+function identifyUser() {
+    analytics.identify("user-123", {
+        name: "Test User",
+        email: "test@example.com"
+    });
+    showStatus("Identify event sent!");
+}
+
+function groupUser() {
+    analytics.group("user-123", {
+        name: "Twilio Test Group",
+        industry: "Technology"
+    });
+    showStatus("Group event sent!");
+}
+
+function aliasUser() {
+    analytics.alias("new-user-123", "old-user-123");
+    showStatus("Alias event sent!");
+}
+
+function customEvent() {
+    var event = document.getElementById("eventName").value;
+
+    if (!event) {
+        showStatus("Please enter an event name.");
+        return;
+    }
+
+    analytics.track(event, {
+        source: "Website",
+        test: true
+    });
+
+    showStatus("Custom event sent: " + event);
+}
+</script>
+
+</body>
+</html>
